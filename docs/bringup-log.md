@@ -108,9 +108,10 @@ Keep JP1 in the JTAG position for PC programming.
   openXC7 path generated the sample `.bit` successfully.
 - Sample bitstream JTAG programming: PASS; XSDB reported `Programming command
   completed.`
-- Physical LED/display behavior: pending direct visual confirmation at the
-  board. JTAG programming success alone does not prove what is visible on the
-  LEDs/display.
+- Physical LED/display behavior for the original board smoke-test design:
+  PASS — user verified the programmed design on the physical Basys3 on
+  2026-11-24. JTAG programming alone would not have been sufficient evidence;
+  this entry is explicitly based on that direct observation.
 - UART telemetry on the physical board: the streaming top now includes UART TX
   and constraints, but no bitstream has been generated or programmed yet.
 
@@ -127,7 +128,7 @@ projects/04_stopwatch       281.77 MHz estimate at 100 MHz target
 
 The reaction-timer bitstream was programmed successfully through JTAG after
 the original smoke-test verification. Physical visual confirmation of its
-button/display behavior is still a human observation step.
+button/display behavior remains a separate human observation step.
 
 The AMD 2026.2 installer was verified, but the installation stopped before
 copying Vivado because the installer requires an AMD authentication token.
