@@ -11,6 +11,8 @@ The repository is organized as a student-to-interview portfolio. Start with
 [`docs/project-catalog.md`](docs/project-catalog.md) for the project index.
 Each project has its own README under [`projects/`](projects/).
 
+Public portfolio mirror: <https://github.com/rajmehta292/basys3-fpga-lab>
+
 ## Start it
 
 From this directory:
