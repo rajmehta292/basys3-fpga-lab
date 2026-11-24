@@ -1,0 +1,145 @@
+# Interview Preparation: Milestone 1
+
+These answers describe the new implementation only. They must be updated with
+measured synthesis, timing, and hardware results as the project progresses.
+
+## 1. What is an FPGA?
+
+**What the interviewer is asking:** whether you understand configurable
+hardware rather than treating an FPGA as a slower CPU.
+
+**Concept:** an FPGA contains programmable routing and configurable resources
+such as LUTs, flip-flops, block RAM, DSPs, clocks, and I/O.
+
+**Beginner explanation:** HDL describes circuits that operate in parallel. A
+clocked register can update every cycle while other logic works concurrently.
+
+**Technically accurate answer:** “An FPGA is a reconfigurable digital circuit.
+I describe synchronous logic in Verilog, synthesis maps it to device resources,
+and implementation places and routes that logic under timing constraints. The
+result is hardware running in parallel, not instructions interpreted one at a
+time.”
+
+**Likely follow-up:** How do you know the circuit meets its clock target?
+
+**Common mistake:** saying that Verilog is executed by the FPGA like C.
+
+**Demonstrate it:** point to the generator's data register, valid register,
+adder, and handshake control.
+
+## 2. What is a valid/ready handshake?
+
+**What the interviewer is asking:** whether you can build lossless streaming
+interfaces under backpressure.
+
+**Concept:** a transfer occurs only when both sides agree on a clock edge.
+
+**Answer:** “`valid` says the producer is presenting a word and `ready` says
+the consumer can accept it. The transfer is `valid && ready` at the active edge.
+If valid is high while ready is low, the producer holds valid and data stable.
+In my counter source I increment only on that accepted-transfer condition.”
+
+**Likely follow-up:** What bug happens if the source increments every cycle?
+
+**Common mistake:** treating valid alone as a transfer.
+
+**Demonstrate it:** show the self-checking four-cycle stall test.
+
+## 3. Why use nonblocking assignments in clocked Verilog?
+
+**What the interviewer is asking:** whether you understand register semantics and
+simulation scheduling.
+
+**Answer:** “Nonblocking assignments model flip-flops. The right-hand sides are
+read from the old state and updates commit together after the clock event. That
+prevents source-code ordering from accidentally making one register see a new
+value while another sees an old value.”
+
+**Likely follow-up:** Where would you use blocking assignments?
+
+**Common mistake:** saying nonblocking means the hardware update is delayed by
+one arbitrary cycle.
+
+## 4. How do you measure throughput in this project?
+
+**What the interviewer is asking:** whether your performance claim is tied to
+actual transfers rather than bus width alone.
+
+**Answer:** “I count accepted words, not cycles with valid asserted. For a fixed
+128-bit path, throughput is accepted words times 128 times the clock frequency,
+divided by the measured clock-window cycles. The 12.8 Gb/s number is the peak
+capacity at 100% utilization; it is not a physical external link or an achieved
+result until timing and counters support it.”
+
+**Likely follow-up:** How do stalls affect the result?
+
+**Common mistake:** reporting 12.8 Gb/s merely because the signal is 128 bits.
+
+## 5. What does the first checker detect, and what does it not detect?
+
+**What the interviewer is asking:** whether you understand the limits of a test
+method rather than overselling it.
+
+**Answer:** “The checker compares each accepted word against the next expected
+counter value and counts mismatching words. It detects corruption and many
+ordering or loss problems, but it is not resynchronizing. If one word is lost,
+the expected sequence can remain offset and later valid words may also be
+reported as errors. A later tagged or resynchronizing checker is needed for
+better diagnosis.”
+
+**Likely follow-up:** How would you count bit errors?
+
+**Common mistake:** claiming one word error always equals one bit error.
+
+## 6. How does this FIFO handle backpressure?
+
+**What the interviewer is asking:** whether you understand buffering and
+boundary conditions rather than only the happy path.
+
+**Answer:** “The source writes only when `in_valid && in_ready`. The FIFO
+asserts `in_ready` while space exists, or when a simultaneous output consume
+will create space. Its output is registered, so the first word has explicit
+read latency; after priming it can sustain one accepted input and one accepted
+output per cycle. I verified full, empty, simultaneous operations, and
+randomized traffic against a reference queue.”
+
+**Likely follow-up:** How did you prove the RAM read latency was handled?
+
+**Common mistake:** treating `full` and `empty` as independent flags without
+considering the output register.
+
+## 7. What is PRBS and why use it?
+
+**What the interviewer is asking:** whether you can validate a high-rate link
+without storing a huge expected waveform.
+
+**Answer:** “PRBS is a deterministic pseudo-random bit sequence generated by an
+LFSR. The generator and checker share a nonzero seed and polynomial. My PRBS-31
+implementation advances the LFSR 128 times per output word, so the word is a
+real parallelized sequence rather than sixteen copies of one short pattern. I
+count word errors separately from differing bits for BER.”
+
+## 8. What evidence is required before claiming 12.8 Gb/s?
+
+**Answer:** “I need a 100 MHz timing-constrained implementation with clean setup
+and hold slack, resource and RAM-inference reports, and a hardware measurement
+window showing accepted words. The number is 128 bits times 100 MHz only at
+100% utilization; it is internal aggregate payload capacity, not a physical
+10 Gb/s link.”
+
+## 9. How would you debug a failing hardware test?
+
+**Answer:** “I would separate the layers: confirm reset and clock constraints,
+check synthesis warnings and timing, compare FIFO occupancy and accepted
+transfer counters, capture valid/ready/data with an ILA, then compare UART
+telemetry with the simulation scoreboard. I would not infer a historical GPMC
+or Linux problem from a Basys 3 UART result.”
+
+## 10. How does this relate to the old GPMC project?
+
+**Answer:** “The shared concept is that an FPGA exposes or processes data for a
+processor-side system. GPMC is a memory-style parallel bus with chip-select,
+address, data, and read/write timing; this Basys 3 design is an internal
+single-clock stream with UART statistics. The new project rebuilds my FPGA,
+buffering, integrity, and measurement understanding, but it does not prove
+unverified details of the original AM3358 implementation.”

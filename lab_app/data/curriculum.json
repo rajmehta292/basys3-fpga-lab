@@ -1,0 +1,252 @@
+[
+  {
+    "id": "hardware-map",
+    "number": 1,
+    "phase": "Orient",
+    "title": "Meet the FPGA and the Basys3",
+    "tagline": "Build the mental model before writing a line of HDL.",
+    "minutes": 15,
+    "goal": "Explain the path from a switch on the board to a configured circuit inside the Artix-7 FPGA.",
+    "concept": "A Verilog module is a description of hardware, not a program that runs line by line. Vivado turns that description into a circuit, then a bitstream configures the FPGA's lookup tables, flip-flops, routing, I/O, and clocking resources.",
+    "why": "If you can point at the physical input, the FPGA port, the logic, and the physical output, every later error has somewhere concrete to land.",
+    "checklist": [
+      "Identify the XC7A35T FPGA, the 100 MHz clock, switches, LEDs, buttons, display, PMODs, VGA, and USB interfaces.",
+      "Trace one bit: SW0 → FPGA input pin V17 → logic → LED0 pin U16.",
+      "Understand that the XDC file binds logical port names to package pins and electrical standards."
+    ],
+    "experiment": "Open Board Lab, select SW0 and LED0, then use Signal Sandbox to make the simulated LED follow SW0.",
+    "code": "module hello(input wire sw0, output wire led0);\n  assign led0 = sw0;\nendmodule",
+    "challenge": "Without looking at the answer, say which file knows that SW0 is package pin V17.",
+    "answer": "The XDC constraints file. Verilog gives the port its logical name; XDC gives that name a physical pin and I/O standard.",
+    "quiz": {
+      "question": "What does Vivado ultimately configure in the FPGA?",
+      "options": ["A Python interpreter", "Lookup tables, flip-flops, routing, and I/O configuration", "Only the USB cable"],
+      "correct": 1
+    }
+  },
+  {
+    "id": "signals-and-numbers",
+    "number": 2,
+    "phase": "Verilog",
+    "title": "Signals, widths, and number systems",
+    "tagline": "Read hardware descriptions without guessing what a bit means.",
+    "minutes": 25,
+    "goal": "Use scalar and vector signals, explicit widths, binary/hex literals, concatenation, and replication confidently.",
+    "concept": "A signal has a width and a value. `wire [3:0] nibble` has four bits numbered 3 down to 0. Width mismatches are not cosmetic: they can truncate, extend, or change the hardware you synthesize.",
+    "why": "Most beginner HDL bugs are not advanced logic errors; they are a one-bit indexing mistake or a value with an unexpected width.",
+    "checklist": [
+      "Translate 4'b1010, 8'hA5, and 16'b0000_0000_0000_0001 into physical switch/LED patterns.",
+      "Use `assign led = sw;` and explain why both sides must be 16 bits.",
+      "Use concatenation `{8'b0, sw[7:0]}` and replication `{16{sw[0]}}`."
+    ],
+    "experiment": "In Signal Sandbox, flip individual switches and watch the bit vector, decimal value, hex value, and LED state update together.",
+    "code": "wire [15:0] sw;\nwire [15:0] led;\nassign led = {16{sw[0]}};",
+    "challenge": "Make every LED mirror SW3 only, using one expression.",
+    "answer": "`assign led = {16{sw[3]}};`",
+    "quiz": {
+      "question": "How many physical bits are in `wire [7:0] data`?",
+      "options": ["7", "8", "9"],
+      "correct": 1
+    }
+  },
+  {
+    "id": "combinational-logic",
+    "number": 3,
+    "phase": "Verilog",
+    "title": "Combinational logic you can see",
+    "tagline": "Turn Boolean ideas into gates and visible board behavior.",
+    "minutes": 30,
+    "goal": "Build and reason about AND, OR, XOR, NOT, muxes, and simple arithmetic as combinational circuits.",
+    "concept": "Combinational logic has no memory: the output is determined by the current inputs. Continuous assignments and `always_comb` describe this kind of hardware.",
+    "why": "The Basys3 gives you 16 switches and 16 LEDs, so it is the perfect truth-table instrument. You can test the circuit in software and then feel the same logic through the board.",
+    "checklist": [
+      "Build a one-bit truth table for AND, OR, XOR, and NAND.",
+      "Use a switch as a selector in a 2-to-1 multiplexer.",
+      "Explain why combinational logic should not accidentally infer a latch."
+    ],
+    "experiment": "Choose AND, OR, XOR, or INVERT in Signal Sandbox. The workspace shows the corresponding Verilog and live truth table.",
+    "code": "assign led[0] = sw[0] & sw[1];\nassign led[1] = sw[0] ^ sw[1];\nassign led[2] = sw[2] ? sw[3] : sw[4];",
+    "challenge": "Use SW15 as a selector: when it is 0 show SW[7:0] on LED[7:0], otherwise show the inverted byte.",
+    "answer": "`assign led[7:0] = sw[15] ? ~sw[7:0] : sw[7:0];`",
+    "quiz": {
+      "question": "What is the defining property of combinational logic?",
+      "options": ["Its output depends only on current inputs", "It always needs a clock", "It can only drive LEDs"],
+      "correct": 0
+    }
+  },
+  {
+    "id": "constraints-and-flow",
+    "number": 4,
+    "phase": "Vivado",
+    "title": "From ports to real pins",
+    "tagline": "Make your logical design electrically real.",
+    "minutes": 35,
+    "goal": "Create a clean Vivado project, add RTL and XDC, select the correct part, and understand synthesis, implementation, and bitstream generation.",
+    "concept": "The FPGA toolflow is a chain of translations: elaborate RTL → synthesize into primitives → place and route → check timing → write the configuration bitstream.",
+    "why": "A perfect Verilog design will still fail if the top module is wrong, a port is unconstrained, the FPGA part is wrong, or the clock timing is missing.",
+    "checklist": [
+      "Select `xc7a35tcpg236-1` for the Basys3.",
+      "Set exactly one top module and add the matching XDC constraints.",
+      "Read the critical warnings before generating a bitstream; do not treat the green checkmark as understanding."
+    ],
+    "experiment": "Generate the starter project from the dashboard. Inspect the `.v` and `.xdc` files before opening Vivado.",
+    "code": "set_property PACKAGE_PIN W5 [get_ports clk]\nset_property IOSTANDARD LVCMOS33 [get_ports clk]\ncreate_clock -period 10.000 [get_ports clk]",
+    "challenge": "Predict what will happen if `led[0]` appears in Verilog but has no corresponding XDC constraint.",
+    "answer": "Implementation should report an unconstrained port or fail to place the design safely; the tool cannot know which physical pin to drive.",
+    "quiz": {
+      "question": "Which artifact configures the FPGA after implementation?",
+      "options": ["The bitstream", "The README", "The XDC alone"],
+      "correct": 0
+    }
+  },
+  {
+    "id": "clocked-logic",
+    "number": 5,
+    "phase": "Digital design",
+    "title": "Clocks, flip-flops, and time",
+    "tagline": "Give hardware memory and make time visible.",
+    "minutes": 40,
+    "goal": "Use `always @(posedge clk)`, registers, counters, clock enables, and reset without creating accidental timing problems.",
+    "concept": "A flip-flop samples its input on a clock edge and holds the result. A counter is a bank of flip-flops plus incrementing logic. The Basys3's 100 MHz clock is too fast to see directly, so you divide it down.",
+    "why": "This is the point where HDL stops looking like Boolean algebra and starts behaving like a machine that evolves over time.",
+    "checklist": [
+      "Write a one-bit toggle flip-flop and identify its state element.",
+      "Build a counter and derive a slow heartbeat bit.",
+      "Explain the difference between a clock and a clock enable."
+    ],
+    "experiment": "In the starter design, observe how `heartbeat[25]` makes a 100 MHz clock visible as a slow change on the LEDs.",
+    "code": "reg [25:0] count;\nalways @(posedge clk) begin\n  count <= count + 1'b1;\nend\nassign led[0] = count[25];",
+    "challenge": "Why does `count <= count + 1'b1` use nonblocking assignment inside a clocked block?",
+    "answer": "Nonblocking assignment models simultaneous register updates at the clock edge and avoids order-dependent behavior between sequential statements.",
+    "quiz": {
+      "question": "What does a flip-flop provide?",
+      "options": ["A remembered state updated at a clock edge", "A faster USB port", "A pin constraint"],
+      "correct": 0
+    }
+  },
+  {
+    "id": "simulation-debug",
+    "number": 6,
+    "phase": "Verification",
+    "title": "Simulate before you synthesize",
+    "tagline": "Make invisible signals observable.",
+    "minutes": 35,
+    "goal": "Write a small testbench, interpret waveforms, separate simulation time from board time, and debug with evidence.",
+    "concept": "Simulation executes a model and records signal changes. It can catch logic errors before hardware, but it does not prove your pin constraints, timing, or electrical assumptions are correct.",
+    "why": "A waveform is a microscope. It lets you ask exactly when a signal changed and whether that change was caused by a clock, input, reset, or bug.",
+    "checklist": [
+      "Instantiate a DUT from a testbench.",
+      "Drive inputs with a clock and stimulus, then inspect outputs.",
+      "Distinguish `#10` simulation delays from real synthesized hardware."
+    ],
+    "experiment": "Paste a small module into Verilog Playground and run Analyze HDL. If iverilog is installed, run the real compiler too.",
+    "code": "initial begin\n  sw = 0; #10;\n  sw = 16'h0001; #10;\n  $finish;\nend",
+    "challenge": "Name one bug a simulation can catch and one bug it cannot catch by itself.",
+    "answer": "It can catch incorrect Boolean logic; it cannot by itself catch a swapped physical pin or a failing USB cable.",
+    "quiz": {
+      "question": "What is a testbench primarily for?",
+      "options": ["Driving inputs and checking a design model", "Assigning FPGA package pins", "Replacing the clock on the board"],
+      "correct": 0
+    }
+  },
+  {
+    "id": "seven-segment",
+    "number": 7,
+    "phase": "Interfaces",
+    "title": "The multiplexed 7-segment display",
+    "tagline": "Turn binary state into a human-readable instrument.",
+    "minutes": 45,
+    "goal": "Drive the active-low anodes and segments, decode hexadecimal digits, and multiplex four digits without visible flicker.",
+    "concept": "The Basys3 display shares segment wires across four digits. You select one anode at a time, drive its segment pattern, then scan quickly enough that persistence of vision blends the result.",
+    "why": "Display drivers combine combinational decode, clock division, counters, and careful active-low reasoning—the perfect integrated exercise.",
+    "checklist": [
+      "Learn the segment order `abcdefg` and active-low behavior.",
+      "Create a hexadecimal lookup table.",
+      "Use a refresh counter to select an anode and digit nibble."
+    ],
+    "experiment": "Use Board Lab to inspect the display pins and compare them with the master XDC.",
+    "code": "case (digit)\n  4'h0: seg = 7'b1000000;\n  4'h1: seg = 7'b1111001;\n  default: seg = 7'b1111111;\nendcase",
+    "challenge": "Why can all four digits appear lit even though only one anode is enabled at a time?",
+    "answer": "The FPGA scans the digits faster than your eyes resolve individual frames; persistence of vision integrates them.",
+    "quiz": {
+      "question": "What does multiplexing buy us here?",
+      "options": ["Four digits share seven segment wires", "The FPGA gets four clocks", "USB becomes four times faster"],
+      "correct": 0
+    }
+  },
+  {
+    "id": "fsm-and-buttons",
+    "number": 8,
+    "phase": "Digital design",
+    "title": "Buttons, debouncing, and finite-state machines",
+    "tagline": "Build behavior that responds cleanly to people.",
+    "minutes": 50,
+    "goal": "Synchronize asynchronous inputs, debounce a pushbutton, detect an edge, and model multi-step behavior as an FSM.",
+    "concept": "A button is a noisy asynchronous signal. A robust design synchronizes it into the clock domain, filters rapid transitions, and turns a press into a single-cycle event. An FSM makes states and transitions explicit.",
+    "why": "This is how a pile of signals becomes a user experience: idle, armed, counting, success, or error.",
+    "checklist": [
+      "Explain metastability and the role of a two-flop synchronizer.",
+      "Separate current state, next state, and outputs.",
+      "Use a button press to advance a visible mode or counter."
+    ],
+    "experiment": "Plan a four-state board demo: IDLE → COUNTING → HOLD → RESET. Sketch the transitions before coding.",
+    "code": "typedef enum logic [1:0] {IDLE, RUN, HOLD, DONE} state_t;\nstate_t state, next_state;",
+    "challenge": "Why is a raw button unsuitable as a clock?",
+    "answer": "It is asynchronous, noisy, and uncontrolled; using it as a clock can create metastability and multiple unintended transitions.",
+    "quiz": {
+      "question": "What should happen before a button drives synchronous logic?",
+      "options": ["Synchronize and debounce it", "Connect it directly to a clock pin", "Convert it to VGA"],
+      "correct": 0
+    }
+  },
+  {
+    "id": "serial-pmod-vga",
+    "number": 9,
+    "phase": "Interfaces",
+    "title": "UART, PMODs, and VGA",
+    "tagline": "Cross the boundary from a demo to a useful instrument.",
+    "minutes": 60,
+    "goal": "Understand baud timing, serial framing, PMOD I/O, and the raster timing idea behind VGA.",
+    "concept": "UART sends framed bits in time; PMODs expose general-purpose digital or analog-connected pins; VGA is a timed stream of pixel coordinates and sync signals. Each interface is a contract between signals and time.",
+    "why": "Interfaces force you to apply clocks, counters, FSMs, constraints, and verification together.",
+    "checklist": [
+      "Derive a UART tick from 100 MHz for a chosen baud rate.",
+      "Map a PMOD signal through the XDC and define its electrical direction.",
+      "Recognize horizontal/vertical sync and active video intervals in VGA."
+    ],
+    "experiment": "Use the reference panel to inspect UART and PMOD pin assignments, then outline a UART transmitter FSM.",
+    "code": "localparam integer CLKS_PER_BIT = 100_000_000 / 115_200;\n// tx: idle -> start -> data[0..7] -> stop",
+    "challenge": "Why does a UART transmitter need a baud counter even though the FPGA already has a clock?",
+    "answer": "The FPGA clock is much faster than the serial bit rate; the counter creates the precise sampling/transmit interval.",
+    "quiz": {
+      "question": "What do UART and VGA have in common?",
+      "options": ["Both are contracts involving signals and timing", "Both are only pin names", "Both require a CPU"],
+      "correct": 0
+    }
+  },
+  {
+    "id": "mastery-capstone",
+    "number": 10,
+    "phase": "Capstone",
+    "title": "Ship your own Basys3 instrument",
+    "tagline": "Design, verify, constrain, program, measure, and explain.",
+    "minutes": 90,
+    "goal": "Complete a small but real FPGA instrument from requirements through a working board demo and an evidence-based explanation.",
+    "concept": "Mastery is not memorizing syntax. It is being able to choose an architecture, state assumptions, predict behavior, observe evidence, and iterate without losing the thread from requirement to physical signal.",
+    "why": "The final project makes every earlier topic useful and gives you a reusable workflow for future boards and interfaces.",
+    "checklist": [
+      "Write a one-page specification with inputs, outputs, clock, reset, and success criteria.",
+      "Break the design into modules and define interfaces before implementation.",
+      "Create a testbench, synthesize with timing constraints, program the board, and capture what you learned."
+    ],
+    "experiment": "Choose one: reaction timer, switch-controlled 7-segment counter, UART command console, VGA pattern generator, or PMOD sensor reader.",
+    "code": "// Your design should now have a top-level contract, submodules, a testbench,\n// constraints, a build path, and a reason for every register.",
+    "challenge": "Teach the project back: explain the signal path, the timing plan, the verification evidence, and the first bug you fixed.",
+    "answer": "There is no single correct implementation. A strong explanation connects requirements → RTL → constraints → timing → bitstream → physical observation.",
+    "quiz": {
+      "question": "What is the clearest sign of FPGA mastery?",
+      "options": ["Typing syntax quickly", "Connecting requirements to observed hardware behavior", "Never seeing a warning"],
+      "correct": 1
+    }
+  }
+]

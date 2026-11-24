@@ -1,0 +1,21 @@
+# Local/build outputs; reproducible source and documentation remain tracked.
+/build/
+/sim/build/
+/sim/build-local*/
+/installer/extracted/
+/installer/*.bin
+/__pycache__/
+**/__pycache__/
+*.pyc
+*.jou
+*.str
+*.log
+*.debug
+.Xil/
+*.lck
+
+# Local credentials and licenses must never enter Git.
+*.lic
+*.token
+auth_token*
+install_config.local.txt

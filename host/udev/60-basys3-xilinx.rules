@@ -1,0 +1,20 @@
+# Basys 3 / Digilent FT2232 USB-JTAG + UART access for Xilinx hw_server.
+#
+# The Xilinx/Digilent JTAG implementation needs the raw USB device. Linux's
+# ftdi_sio VCP driver otherwise claims the JTAG interface and hw_server can
+# report zero cables. This rule deliberately matches the Digilent FTDI
+# identity, not every FTDI adapter on the machine.
+#
+# Installing this file requires root. The rule preserves the USB-UART channel,
+# so the normal /dev/ttyUSB* telemetry path remains available.
+
+# Allow the Xilinx/Digilent library to open the raw USB device. The current
+# user is already in plugdev, and TAG+=uaccess also grants access on desktop
+# systems without making the device world-writable.
+ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="0403", ATTR{idProduct}=="6010", ATTR{manufacturer}=="Digilent", GROUP:="plugdev", MODE:="0660", TAG+="uaccess"
+
+# Channel A (interface 00) is the Basys 3 JTAG channel. Release only that
+# interface after ftdi_sio binds. Channel B (interface 01) remains bound so
+# the board's USB-UART channel stays available as /dev/ttyUSB*.
+# %k expands to the exact interface kernel name, for example 1-1:1.0.
+ACTION=="bind", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_interface", DRIVER=="ftdi_sio", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", ATTR{bInterfaceNumber}=="00", RUN+="/bin/sh -c 'echo -n %k > /sys/bus/usb/drivers/ftdi_sio/unbind'"

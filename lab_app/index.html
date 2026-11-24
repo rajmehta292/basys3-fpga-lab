@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Basys3 Mastery Lab</title>
+  <meta name="description" content="A guided, interactive Verilog and Vivado learning environment for the Digilent Basys3.">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-lockup">
+        <div class="brand-mark"><span></span><span></span><span></span></div>
+        <div>
+          <div class="eyebrow">FPGA field guide</div>
+          <h1>Basys3<br>Mastery Lab</h1>
+        </div>
+      </div>
+
+      <div class="learner-card">
+        <div class="avatar">D</div>
+        <div>
+          <strong>My learning path</strong>
+          <span id="sidebar-progress-label">0 of 10 checkpoints</span>
+        </div>
+      </div>
+
+      <nav class="primary-nav" aria-label="Main navigation">
+        <button class="nav-item active" data-view="dashboard"><span class="nav-icon">⌂</span>Mission control</button>
+        <button class="nav-item" data-view="curriculum"><span class="nav-icon">◫</span>Learning path</button>
+        <button class="nav-item" data-view="simulator"><span class="nav-icon">◈</span>Signal sandbox</button>
+        <button class="nav-item" data-view="workspace"><span class="nav-icon">⌘</span>Verilog playground</button>
+        <button class="nav-item" data-view="board"><span class="nav-icon">▦</span>Board lab</button>
+        <button class="nav-item" data-view="reference"><span class="nav-icon">☷</span>Reference desk</button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <div class="mini-status"><span class="status-dot" id="sidebar-status-dot"></span><span id="sidebar-status-text">Checking hardware…</span></div>
+        <button class="quiet-button" id="refresh-health">Refresh diagnostics <span>↗</span></button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="breadcrumb"><span>Basys3</span><span class="crumb-separator">/</span><span id="current-section">Mission control</span></div>
+        <div class="topbar-actions">
+          <div class="connection-pill" id="connection-pill"><span class="status-dot"></span><span id="connection-label">Checking board</span></div>
+          <button class="icon-button" id="help-button" title="How to use the lab">?</button>
+        </div>
+      </header>
+
+      <div id="toast" class="toast" role="status"></div>
+
+      <section class="view active" id="view-dashboard" data-title="Mission control">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="eyebrow accent-eyebrow">Your hardware, your pace</div>
+            <h2>Build it.<br><em>See it.</em><br>Understand it.</h2>
+            <p>A patient, practical path from “what is a wire?” to designing, timing, programming, and debugging your own FPGA instruments.</p>
+            <div class="hero-actions">
+              <button class="primary-button" id="continue-button">Continue the path <span>→</span></button>
+              <button class="text-button" data-view-target="simulator">Try the sandbox <span>↗</span></button>
+            </div>
+          </div>
+          <div class="hero-visual" aria-label="Signal path illustration">
+            <div class="chip-orbit orbit-one"></div><div class="chip-orbit orbit-two"></div>
+            <div class="fpga-chip"><span class="chip-label">XC7A35T</span><span class="chip-sub">Artix-7 FPGA</span><div class="chip-lines"></div></div>
+            <div class="signal-node node-a"><span>SW</span><b>input</b></div>
+            <div class="signal-node node-b"><span>RTL</span><b>logic</b></div>
+            <div class="signal-node node-c"><span>LED</span><b>output</b></div>
+            <div class="signal-line line-a"></div><div class="signal-line line-b"></div>
+            <div class="visual-caption">a signal becomes<br>a circuit you can touch</div>
+          </div>
+        </div>
+
+        <div class="metrics-row" id="dashboard-metrics"></div>
+
+        <div class="section-heading compact-heading"><div><span class="eyebrow">Next up</span><h3 id="next-lesson-heading">Loading your first mission…</h3></div><button class="outline-button" data-view-target="curriculum">View full path <span>→</span></button></div>
+        <div class="next-lesson-card" id="next-lesson-card"></div>
+
+        <div class="dashboard-columns">
+          <div>
+            <div class="section-heading"><div><span class="eyebrow">Physical intuition</span><h3>Meet your Basys3</h3></div><button class="text-button" data-view-target="board">Explore board <span>↗</span></button></div>
+            <div class="board-snapshot" id="board-snapshot"></div>
+          </div>
+          <div>
+            <div class="section-heading"><div><span class="eyebrow">The habit</span><h3>Learn in a loop</h3></div></div>
+            <div class="loop-card">
+              <div class="loop-step"><span class="step-number">01</span><div><strong>Predict</strong><p>What should the signal do?</p></div></div>
+              <div class="loop-arrow">↓</div>
+              <div class="loop-step"><span class="step-number">02</span><div><strong>Build</strong><p>Describe it in HDL.</p></div></div>
+              <div class="loop-arrow">↓</div>
+              <div class="loop-step"><span class="step-number">03</span><div><strong>Observe</strong><p>Simulate, program, measure.</p></div></div>
+              <div class="loop-arrow">↓</div>
+              <div class="loop-step"><span class="step-number">04</span><div><strong>Explain</strong><p>Teach the signal path back.</p></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-curriculum" data-title="Learning path">
+        <div class="page-intro"><div><span class="eyebrow accent-eyebrow">Ten missions · foundations to capstone</span><h2>A path that gets deeper<br>without getting lonely.</h2><p>Every mission has a concept, a physical experiment, a code fragment, a checkpoint, and a reason it matters.</p></div><div class="progress-ring" id="progress-ring"><span>0%</span><small>complete</small></div></div>
+        <div class="curriculum-layout"><div class="lesson-list" id="lesson-list"></div><article class="lesson-detail" id="lesson-detail"></article></div>
+      </section>
+
+      <section class="view" id="view-simulator" data-title="Signal sandbox">
+        <div class="page-intro compact-intro"><div><span class="eyebrow accent-eyebrow">No hardware required</span><h2>Make the signal visible.</h2><p>Flip inputs, inspect outputs, and connect each behavior to the Verilog that would synthesize onto the board.</p></div><div class="sandbox-badge">software model <span>●</span></div></div>
+        <div class="sim-layout"><div class="panel signal-panel"><div class="panel-header"><div><span class="eyebrow">Experiment</span><h3>Choose a circuit</h3></div><select id="sim-mode" class="select-control"><option value="direct">Direct wire</option><option value="and">AND gate</option><option value="or">OR gate</option><option value="xor">XOR gate</option><option value="invert">Invert byte</option><option value="replicate">Replicate SW0</option><option value="mux">Mux: raw / inverted</option></select></div><div class="signal-visual" id="signal-visual"></div><div class="switch-grid" id="switch-grid"></div><div class="sim-readout" id="sim-readout"></div></div><div class="sim-side"><div class="panel code-panel"><div class="panel-header"><div><span class="eyebrow">Hardware description</span><h3>What you would write</h3></div><span class="live-label"><i></i> live</span></div><pre class="code-block" id="sim-code"></pre><div class="explain-note" id="sim-explanation"></div></div><div class="panel checkpoint-panel"><span class="eyebrow">Checkpoint</span><h3>What changes first?</h3><p>Flip SW0 in the direct-wire circuit. Which signal should change immediately?</p><div class="answer-grid" id="sim-answers"><button data-answer="led">LED output</button><button data-answer="clock">Clock frequency</button><button data-answer="pin">Package pin name</button></div><div class="feedback" id="sim-feedback"></div></div></div></div>
+      </section>
+
+      <section class="view" id="view-workspace" data-title="Verilog playground">
+        <div class="page-intro compact-intro"><div><span class="eyebrow accent-eyebrow">Write · inspect · iterate</span><h2>Your first HDL workbench.</h2><p>Start with a tiny top module, analyze it locally, and use the diagnostics to understand what the tools are doing.</p></div><button class="outline-button" id="real-sim-button">Run real iverilog if available <span>↗</span></button></div>
+        <div class="workspace-grid"><div class="panel editor-panel"><div class="panel-header"><div><span class="eyebrow">Editable source</span><h3>top.v</h3></div><div class="editor-actions"><button class="small-button" id="reset-code">Reset starter</button><button class="primary-button small-primary" id="analyze-code">Analyze HDL <span>→</span></button></div></div><textarea id="verilog-editor" spellcheck="false"></textarea><div class="editor-footer"><span>Tip: describe hardware in terms of signals and relationships.</span><span id="char-count">0 chars</span></div></div><div class="workspace-side"><div class="panel analysis-panel"><div class="panel-header"><div><span class="eyebrow">Guided checks</span><h3>What the tool sees</h3></div><span class="analysis-state" id="analysis-state">waiting</span></div><div id="analysis-results" class="analysis-results"><div class="empty-state">Run an analysis to get a friendly explanation of your module.</div></div></div><div class="panel terminal-panel"><div class="panel-header"><div><span class="eyebrow">Build journal</span><h3>Keep the chain intact</h3></div><button class="small-button" id="clear-journal">Clear</button></div><div class="terminal-output" id="terminal-output"><div><span class="terminal-prompt">lab</span> Waiting for your first experiment…</div></div></div></div></div>
+      </section>
+
+      <section class="view" id="view-board" data-title="Board lab">
+        <div class="page-intro compact-intro"><div><span class="eyebrow accent-eyebrow">Basys3 · XC7A35T-1CPG236C</span><h2>Know the board<br>as a system.</h2><p>Every component is a teaching instrument. Select one to see its signal path, pins, electrical behavior, and next experiment.</p></div><div class="board-status-card" id="board-status-card"></div></div>
+        <div class="board-layout"><div class="board-map panel"><div class="board-plate"><div class="board-silkscreen">DIGILENT <span>Basys 3</span></div><div class="board-chip-mark">ARTIX-7</div><button class="board-hotspot hotspot-clock" data-component="clock">CLK</button><button class="board-hotspot hotspot-switches" data-component="switches">SW</button><button class="board-hotspot hotspot-leds" data-component="leds">LED</button><button class="board-hotspot hotspot-display" data-component="display">7SEG</button><button class="board-hotspot hotspot-buttons" data-component="buttons">BTN</button><button class="board-hotspot hotspot-pmod" data-component="pmod">PMOD</button><button class="board-hotspot hotspot-vga" data-component="vga">VGA</button><div class="board-port port-usb">USB</div></div><div class="board-legend"><span><i class="legend-dot dot-input"></i>input</span><span><i class="legend-dot dot-output"></i>output</span><span><i class="legend-dot dot-interface"></i>interface</span></div></div><div class="panel component-detail" id="component-detail"></div></div>
+        <div class="hardware-actions panel"><div><span class="eyebrow">Take it to silicon</span><h3>Generate and program a starter project</h3><p>The generator creates a small RTL + XDC project inside <code>generated/</code>. Programming is always explicit and only uses a bitstream you choose.</p></div><div class="action-controls"><label>Project name<input id="project-name" value="my-first-led-lab"></label><button class="outline-button" id="generate-project">Generate starter <span>↗</span></button><label>Bitstream path<input id="bitstream-path" placeholder="generated/my-first-led-lab/design.bit"></label><button class="primary-button" id="program-board">Program board <span>→</span></button></div><div class="action-result" id="hardware-action-result"></div></div>
+      </section>
+
+      <section class="view" id="view-reference" data-title="Reference desk">
+        <div class="page-intro compact-intro"><div><span class="eyebrow accent-eyebrow">A calm place to look things up</span><h2>Reference desk.</h2><p>Use this when a concept is fuzzy, a pin is unfamiliar, or a warning needs translating into plain language.</p></div></div>
+        <div class="reference-grid"><div class="panel reference-card"><span class="eyebrow">Toolflow</span><h3>One design, many representations</h3><div class="flow-row"><span>RTL</span><b>→</b><span>elaborated</span><b>→</b><span>netlist</span><b>→</b><span>placed</span><b>→</b><span>bitstream</span></div><p>Keep asking “what representation am I looking at?” Source code, synthesized logic, placed resources, and the programmed FPGA are related—but not identical.</p></div><div class="panel reference-card"><span class="eyebrow">Signal vocabulary</span><h3>Words you will use every day</h3><dl class="reference-list"><dt>wire</dt><dd>A connection driven by combinational logic or a module output.</dd><dt>reg / logic</dt><dd>A variable used to hold a value; in clocked RTL it commonly maps to flip-flops.</dd><dt>posedge</dt><dd>A rising edge event, usually the moment registers update.</dd><dt>XDC</dt><dd>Vivado constraints: package pins, I/O standards, clocks, timing, and more.</dd></dl></div><div class="panel reference-card wide-reference"><span class="eyebrow">Basys3 quick map</span><h3>Physical facts worth memorizing</h3><div class="facts-table"><div><span>FPGA</span><strong>XC7A35T-1CPG236C</strong></div><div><span>Clock</span><strong>100 MHz · W5</strong></div><div><span>Switches</span><strong>SW0–SW15 · V17 → R2</strong></div><div><span>LEDs</span><strong>LD0–LD15 · U16 → L1</strong></div><div><span>Display</span><strong>4-digit · active-low</strong></div><div><span>USB</span><strong>JTAG + UART via FT2232</strong></div></div></div></div>
+      </section>
+    </main>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+#### Vivado Design Suite 2026.2 unattended installation ####
+Edition=Vivado Design Suite
+Product=Vivado
+Destination=/home/dmehta/AMD_FPGA/2026.2
+Modules=Artix-7 FPGAs:1
+InstallOptions=Acquire or Manage a License Key:0
+CreateProgramGroupShortcuts=0
+ProgramGroupFolder=AMD Adaptive SoC and FPGA Tools
+CreateDesktopShortcuts=0
+CreateFileAssociation=0
