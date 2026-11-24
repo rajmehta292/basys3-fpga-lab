@@ -3,7 +3,10 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEST_DIR="$(mktemp -d /tmp/basys3-catalog-tests.XXXXXX)"
-if [[ -x "$ROOT_DIR/scripts/iverilog_local.sh" && -x "$ROOT_DIR/scripts/vvp_local.sh" ]]; then
+if [[ -x "$ROOT_DIR/scripts/iverilog_local.sh" && \
+      -x "$ROOT_DIR/scripts/vvp_local.sh" && \
+      -x "${IVERILOG_ROOT:-/home/dmehta/openxc7/iverilog-root}/usr/bin/iverilog" && \
+      -x "${IVERILOG_ROOT:-/home/dmehta/openxc7/iverilog-root}/usr/bin/vvp" ]]; then
     IVERILOG="$ROOT_DIR/scripts/iverilog_local.sh"
     VVP="$ROOT_DIR/scripts/vvp_local.sh"
     STREAM_IVERILOG="$IVERILOG"
